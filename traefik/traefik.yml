@@ -1,0 +1,32 @@
+api:
+  dashboard: true
+
+entryPoints:
+  websecure:
+    address: ":443"
+    http:
+      tls:
+        certResolver: myhttpchallenge
+        domains:
+          - main: "easy-platform.cloud"
+            sans:
+              - "*.easy-platform.cloud"
+
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+
+certificatesResolvers:
+  myhttpchallenge:
+    acme:
+      email: "d.richter@easy-platform.de"
+      storage: "/letsencrypt/acme.json"
+      dnsChallenge:
+        provider: acme-dns
+        delayBeforeCheck: 0
+
+log:
+  level: DEBUG
+
+accessLog: {}
