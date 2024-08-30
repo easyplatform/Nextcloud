@@ -1,6 +1,4 @@
-version: "3.7"
 services:
-
   traefik:
     image: traefik:3.1
       # Try to enable this if something isn't working. 
