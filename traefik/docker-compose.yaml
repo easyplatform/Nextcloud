@@ -1,35 +1,24 @@
 services:
-
   traefik:
-    image: "traefik:v3.1"
-    container_name: "traefik"
-      # Try to enable this if something isn't working. 
-      # Chances are, Traefik will tell you why.
-      # Be careful in production as it exposes the traffic you might not want to expose.
-      #--log.level=DEBUG
-        - --entrypoints.http.address=:80
-        - --entrypoints.https.address=:443
-        - --providers.docker=true
-        - --api=true
-        - --certificatesresolvers.letsencrypt.acme.httpchallenge=true
-        - --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=http
-        - --certificatesresolvers.letsencrypt.acme.email=d.richter@easy-platform.de
-        - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
-    labels:
-        - traefik.http.routers.to-https.rule=HostRegexp(`{host:.+}`)
-        - traefik.http.routers.to-https.entrypoints=http
-        - traefik.http.routers.to-https.middlewares=to-https
-        - traefik.http.routers.traefik.rule=Host(`traefik.easy-platform.cloud`)
-        - traefik.http.routers.traefik.entrypoints=https
-        - traefik.http.routers.traefik.middlewares=auth
-        - traefik.http.routers.traefik.service=api@internal
-        - traefik.http.routers.traefik.tls=true
-        - traefik.http.routers.traefik.tls.certresolver=letsencrypt
-        - traefik.http.middlewares.to-https.redirectscheme.scheme=https
-        - traefik.http.middlewares.auth.basicauth.users=admin:$2a$12$E8nSJ9NeMekEe4kxbiv48.SKC93kQblapmSpXJ8kWpmXvtTq/46CW 
+    image: traefik:v3.1
+    container_name: traefik
+    command:
+      - "--api.dashboard=true"
+      - "--providers.docker=true"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myhttpchallenge.acme.httpchallenge.entrypoint=websecure"
+      - "--certificatesresolvers.myhttpchallenge.acme.email=d.richter@easy-platform.de"
+      - "--certificatesresolvers.myhttpchallenge.acme.storage=/letsencrypt/acme.json"
     ports:
-        - 80:80
-        - 443:443
+      - "443:443"  # HTTPS
+      - "8080:8080" # Traefik Dashboard
     volumes:
-        - ./data/letsencrypt:/letsencrypt
-        - /var/run/docker.sock:/var/run/docker.sock:ro
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./traefik.yml:/etc/traefik/traefik.yml:ro"
+      - "./letsencrypt:/letsencrypt"
+    networks:
+      - frontend
+
+networks:
+  frontend:
+    external: true
